@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ProyectoSpotify</string>
+    <string name="title_activity_welcome">WelcomeActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="title_activity_register">RegisterActivity</string>
+    <string name="title_activity_register_new_user">RegisterNewUserActivity</string>
+    <string name="title_activity_login_user">LoginUserActivity</string>
+</resources>
