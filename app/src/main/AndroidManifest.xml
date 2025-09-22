@@ -13,12 +13,12 @@
         android:theme="@style/Theme.ProyectoSpotify">
         <activity
             android:name=".screens.LoginUserActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/title_activity_login_user"
             android:theme="@style/Theme.ProyectoSpotify" />
         <activity
             android:name=".screens.RegisterNewUserActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/title_activity_register_new_user"
             android:theme="@style/Theme.ProyectoSpotify" />
         <activity
@@ -52,6 +52,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".screens.AlbumDetailActivity" />
+
     </application>
 
 </manifest>

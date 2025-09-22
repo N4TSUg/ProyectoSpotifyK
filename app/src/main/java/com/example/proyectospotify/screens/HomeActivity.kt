@@ -124,7 +124,15 @@ fun AlbumCard(album: JamendoAlbum) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Navegación a detalle del álbum */ }
+            .clickable {
+                // Crear intent y enviar datos al detalle
+                val intent = Intent(context, AlbumDetailActivity::class.java).apply {
+                    putExtra("album_id", album.id)
+                    putExtra("album_name", album.name)
+                    putExtra("album_image", album.image)
+                }
+                context.startActivity(intent)
+            }
     ) {
         AsyncImage(
             model = ImageRequest.Builder(context)
@@ -147,6 +155,7 @@ fun AlbumCard(album: JamendoAlbum) {
         )
     }
 }
+
 
 @Composable
 fun HomeContent(albums: List<JamendoAlbum>) {
@@ -183,5 +192,9 @@ fun HomeContent(albums: List<JamendoAlbum>) {
                 }
             }
         }
+        if (albums.isEmpty()) {
+            Text("No hay álbumes disponibles", modifier = Modifier.padding(16.dp))
+        }
+
     }
 }
