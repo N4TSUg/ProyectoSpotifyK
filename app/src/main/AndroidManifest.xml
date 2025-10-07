@@ -54,6 +54,9 @@
         </activity>
         <activity android:name=".screens.AlbumDetailActivity" />
 
+    <activity android:name=".playlists.PlaylistActivity" />
+        <activity android:name=".search.SearchActivity" />
+
     </application>
 
 </manifest>
