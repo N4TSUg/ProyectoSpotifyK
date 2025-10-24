@@ -60,10 +60,17 @@ class HomeActivity : ComponentActivity() {
     }
 
     private fun logout() {
+        // 🔹 Reinicia completamente el reproductor antes de cerrar sesión
+        playerViewModel.resetPlayer()
+
+        // 🔹 Cierra sesión en Firebase
         FirebaseAuth.getInstance().signOut()
-        playerViewModel.pause()
+
+        // 🔹 Limpia preferencias guardadas
         val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
         prefs.edit().remove("isLoggedIn").apply()
+
+        // 🔹 Redirige al login
         val intent = Intent(this, LoginActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -91,13 +98,58 @@ class HomeActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title = { Text("RedSound", color = Color.White, fontWeight = FontWeight.Bold) },
-                            actions = { IconButton(onClick = { logout() }) { Icon(Icons.Filled.ExitToApp, "Cerrar sesión", tint = Color.White) } },
+                            title = {
+                                Text(
+                                    "RedSound",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            },
+                            actions = {
+                                IconButton(onClick = { logout() }) {
+                                    Icon(
+                                        Icons.Filled.ExitToApp,
+                                        "Cerrar sesión",
+                                        tint = Color.White
+                                    )
+                                }
+                            },
                             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
                         )
                     },
-                    bottomBar = {
-                        Column {
+                    containerColor = Color.Black
+                ) { innerPadding ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .background(Color.Black)
+                    ) {
+                        // Contenido principal con espacio para el minireproductor y la barra
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                when (selectedIndex) {
+                                    0 -> HomeContent(albumsState, accentColor)
+                                    1 -> SearchTab(searchVm, playlistVm, playerViewModel)
+                                    2 -> {
+                                        val context = LocalContext.current
+                                        PlaylistTab(
+                                            playlistVm = playlistVm,
+                                            onOpenPlaylist = { playlistId ->
+                                                val intent = Intent(
+                                                    context,
+                                                    PlaylistDetailActivity::class.java
+                                                ).apply {
+                                                    putExtra("playlist_id", playlistId)
+                                                }
+                                                context.startActivity(intent)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            // MiniPlayer con padding inferior para no chocar con la barra
                             currentTrack?.let { track ->
                                 val context = LocalContext.current
                                 MiniPlayer(
@@ -111,7 +163,10 @@ class HomeActivity : ComponentActivity() {
                                     onSeek = { newPosition -> playerViewModel.seekTo(newPosition) },
                                     onMiniPlayerClick = {
                                         currentAlbumId?.let { albumId ->
-                                            val intent = Intent(context, AlbumDetailActivity::class.java).apply {
+                                            val intent = Intent(
+                                                context,
+                                                AlbumDetailActivity::class.java
+                                            ).apply {
                                                 putExtra("album_id", albumId)
                                                 putExtra("album_name", currentAlbumName)
                                                 putExtra("album_image", currentAlbumImage)
@@ -121,15 +176,26 @@ class HomeActivity : ComponentActivity() {
                                     }
                                 )
                             }
+
+                            // Barra de navegación
                             NavigationBar(containerColor = Color.Black) {
                                 val navItems = listOf("Inicio", "Buscar", "Playlists")
-                                val navIcons = listOf(Icons.Filled.Home, Icons.Filled.Search, Icons.Filled.LibraryMusic)
+                                val navIcons = listOf(
+                                    Icons.Filled.Home,
+                                    Icons.Filled.Search,
+                                    Icons.Filled.LibraryMusic
+                                )
 
                                 navItems.forEachIndexed { index, title ->
                                     NavigationBarItem(
                                         selected = selectedIndex == index,
                                         onClick = { selectedIndex = index },
-                                        icon = { Icon(navIcons[index], contentDescription = title) },
+                                        icon = {
+                                            Icon(
+                                                navIcons[index],
+                                                contentDescription = title
+                                            )
+                                        },
                                         label = { Text(title) },
                                         colors = NavigationBarItemDefaults.colors(
                                             selectedIconColor = accentColor,
@@ -142,32 +208,13 @@ class HomeActivity : ComponentActivity() {
                                 }
                             }
                         }
-                    },
-                    containerColor = Color.Black
-                ) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)) {
-                        when (selectedIndex) {
-                            0 -> HomeContent(albumsState, accentColor)
-                            1 -> SearchTab(searchVm, playlistVm, playerViewModel)
-                            2 -> {
-                                val context = LocalContext.current
-                                PlaylistTab(
-                                    playlistVm = playlistVm,
-                                    onOpenPlaylist = { playlistId ->
-                                        val intent = Intent(context, PlaylistDetailActivity::class.java).apply {
-                                            putExtra("playlist_id", playlistId)
-                                        }
-                                        context.startActivity(intent)
-                                    }
-                                )
-                            }
-                        }
                     }
                 }
             }
         }
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)

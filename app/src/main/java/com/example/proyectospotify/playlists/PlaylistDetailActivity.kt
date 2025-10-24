@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.proyectospotify.screens.MiniPlayer
 import com.example.proyectospotify.ui.theme.ProyectoSpotifyTheme
 import com.example.proyectospotify.viewmodels.PlayerViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -47,12 +48,32 @@ class PlaylistDetailActivity : ComponentActivity() {
                 val playlists by playlistVm.playlists.collectAsState()
                 val playlist = playlists.find { it.id == playlistId }
 
+                val currentTrack by playerVm.currentTrack.collectAsState()
+                val isPlaying by playerVm.isPlaying.collectAsState()
+                val currentPosition by playerVm.currentPosition.collectAsState()
+
                 Scaffold(
                     topBar = {
                         TopAppBar(
                             title = { Text(playlist?.name ?: "Playlist", color = Color.White) },
                             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
                         )
+                    },
+                    bottomBar = {
+                        // 🎶 Agregamos el MiniPlayer aquí
+                        currentTrack?.let { track ->
+                            MiniPlayer(
+                                track = track,
+                                isPlaying = isPlaying,
+                                currentPosition = currentPosition,
+                                duration = track.duration,
+                                onPlayPause = { playerVm.togglePlayPause() },
+                                onNext = { playerVm.playNext() },
+                                onPrevious = { playerVm.playPrevious() },
+                                onSeek = { newPos -> playerVm.seekTo(newPos) },
+                                onMiniPlayerClick = { /* Puedes abrir AlbumDetail si deseas */ }
+                            )
+                        }
                     },
                     containerColor = Color.Black
                 ) { padding ->
@@ -66,25 +87,32 @@ class PlaylistDetailActivity : ComponentActivity() {
                             Text("Playlist no encontrada", color = Color.Gray)
                         }
                     } else {
-                        PlaylistSongsList(
-                            playlist = playlist,
-                            onDeleteSong = { song ->
-                                playlistVm.removeSong(playlist.id, song.id)
-                            },
-                            onPlaySong = { song ->
-                                try {
-                                    playerVm.playTrack(
-                                        track = song.toJamendoTrack(),
-                                        playlist = playlist.songs.map { it.toJamendoTrack() },
-                                        albumId = playlist.id,
-                                        albumImage = song.image,
-                                        albumName = playlist.name
-                                    )
-                                } catch (e: Exception) {
-                                    Log.e("PlaylistDetail", "Error al reproducir canción", e)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(padding)
+                                .padding(bottom = 90.dp)
+                        ) {
+                            PlaylistSongsList(
+                                playlist = playlist,
+                                onDeleteSong = { song ->
+                                    playlistVm.removeSong(playlist.id, song.id)
+                                },
+                                onPlaySong = { song ->
+                                    try {
+                                        playerVm.playTrack(
+                                            track = song.toJamendoTrack(),
+                                            playlist = playlist.songs.map { it.toJamendoTrack() },
+                                            albumId = playlist.id,
+                                            albumImage = song.image,
+                                            albumName = playlist.name
+                                        )
+                                    } catch (e: Exception) {
+                                        Log.e("PlaylistDetail", "Error al reproducir canción", e)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }

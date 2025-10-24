@@ -175,6 +175,21 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun resetPlayer() {
+        mediaPlayer.stop()
+        mediaPlayer.reset()
+        _currentTrack.value = null
+        _isPlaying.value = false
+        _currentPosition.value = 0
+        _currentAlbumId.value = null
+        _currentAlbumImage.value = null
+        _currentAlbumName.value = null
+        progressJob?.cancel()
+        currentPlaylist = emptyList()
+        originalPlaylist = emptyList()
+        currentTrackIndex = -1
+    }
+
     override fun onCleared() {
         super.onCleared()
         mediaPlayer.release()
@@ -191,4 +206,5 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
+
 }
